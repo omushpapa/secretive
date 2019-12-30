@@ -3,13 +3,19 @@
 
 import click
 from cypher import Cypher
-from random import choice, randint
+from random import choice
 from string import (ascii_letters as letters, digits,
                     ascii_uppercase, ascii_lowercase)
 
 punctuation = '!#$%&\'()*+,-./:;<=>?@[\\]^_{|}'
 
-RULES = ['number', 'lowercase', 'uppercase', 'special', 'all']
+RULES = {
+    'number': lambda: choice(digits),
+    'lowercase': lambda: choice(ascii_lowercase),
+    'uppercase': lambda: choice(ascii_uppercase),
+    'special': lambda: choice(punctuation),
+}
+RULE_IDS = list(RULES.keys()) + ['all']
 
 cypher = Cypher()
 select_cyphers = cypher.get_available_cyphers()
@@ -69,6 +75,21 @@ def passes_rule(rule, password):
     return False
 
 
+def update_password(password, value, position=None):
+    """Update password with value
+
+    :param str password: The password string
+    :param str value: The value to update with
+    :return: The updated password
+    """
+    result = list(password)
+    if position is None:
+        position = choice(range(len(password)))
+
+    result.insert(position, value)
+    return ''.join(result)
+
+
 def fix_rule(rule, password):
     """Apply a rule
 
@@ -77,57 +98,60 @@ def fix_rule(rule, password):
     :return: A character that meets the rule
     :rtype: str
     """
-    value = '.'
-    if rule == 'number':
-        value = choice(digits)
 
-    elif rule == 'lowercase':
-        l = (i for i in password if i in ascii_lowercase)
-        value = next(l, ascii_lowercase)
-
-    elif rule == 'uppercase':
-        l = (i for i in password if i in ascii_uppercase)
-        value = next(l, ascii_uppercase)
-
-    elif rule == 'special':
-        l = (i for i in password if i in punctuation)
-        value = next(l, choice(punctuation))
-
-    result = list(password)
-    length = len(result)
-    result.insert(randint(int(length/2), length), value)
-    return ''.join(result)
+    value = RULES.get(rule, lambda: choice(punctuation))()
+    return update_password(password, value)
 
 
-@click.command()
-@click.option('--length', default=8)
-@click.option('--rule', default=['all'], multiple=True, type=click.Choice(RULES))
-@click.argument('name')
 def generate_password(**kwargs):
     """Generate a simple but complex password
 
     Tries as much to use the provided character limitations.
     """
-    name = ''.join(kwargs['name'].split())
+    word = ''.join(kwargs.get('word', '').split())
     length = kwargs['length']
     rules = kwargs['rule']
 
-    password = ''.join(map(get_cypher, name))
+    password = ''.join(map(get_cypher, word))
     rem = length - len(password)
     if rem > 0:
         fillers = fill_length(rem)
         password = '{}{}'.format(password, fillers)
 
     if 'all' in rules:
-        rules = RULES
-        rules.remove('all')
+        rules = RULE_IDS[:-1]
 
     for rule in rules:
         if not passes_rule(rule, password):
             password = fix_rule(rule, password)
 
-    print('Your password: {}'.format(password))
+    information = 'Your password: '
+    click.echo(information + click.style(password, fg='cyan'))
+
+
+def cli(word=True):
+    rule = click.option('--rule', default=['all'], multiple=True, type=click.Choice(RULE_IDS))
+    length = click.option('--length', default=8)
+
+    if word:
+        @click.command()
+        @length
+        @rule
+        @click.argument('word')
+        def password_gen(**kwargs):
+            """Generate a random password string based off of specific characters"""
+            return generate_password(**kwargs)
+
+    else:
+        @click.command()
+        @length
+        @rule
+        def password_gen(**kwargs):
+            """Generate a random password string"""
+            return generate_password(**kwargs)
+
+    return password_gen()
 
 
 if __name__ == "__main__":
-    generate_password()
+    cli(word=False)

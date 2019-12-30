@@ -1,6 +1,6 @@
 # PasswordGen
 
-Generates a password using the limitations specified by length and characters.
+Generates a password
 
 # Usage
 
