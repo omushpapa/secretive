@@ -16,7 +16,7 @@ setup(
     author='Aswa Paul',
     license='MIT',
     packages=[
-        'passwordgen'
+        'secretive'
     ],
     entry_points={
         'console_scripts': [
