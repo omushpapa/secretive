@@ -1,16 +1,13 @@
-# PasswordGen
+# Secretive
 
-Generates a password
+A password generator
 
 # Usage
 
-## Configuration
+## Installation
 
 ```bash
-pip install --user -r requirements.txt
-# or
-# pipenv install
-sudo chmod +x passwordgen.py
+pip install secretive
 ```
 
 ## Basic Usage
@@ -18,6 +15,7 @@ sudo chmod +x passwordgen.py
 ```bash
 passwordgen.py "giantas"
 
+# character length of 20
 passwordgen.py "giantas" --length 20
 
 passwordgen.py --help

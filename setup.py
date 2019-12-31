@@ -31,7 +31,10 @@ setup(
     zip_safe=False,
     python_requires='>2.7, >3.5, <3.7',
     classifiers=[
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: MIT License',
         "Programming Language :: Python",
+        'Programming Language :: Python :: 3',
         "Programming Language :: Python :: 3.6",
     ],
     keywords='password generator secret random'
