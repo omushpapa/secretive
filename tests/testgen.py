@@ -2,7 +2,7 @@ import unittest
 from random import choice, randint
 from string import ascii_uppercase, ascii_lowercase, digits, ascii_letters
 
-from passwordgen.gen import passes_rule, punctuation, update_password, apply_rule, RuleType, generate_password
+from secretive.gen import passes_rule, punctuation, update_password, apply_rule, RuleType, generate_password
 
 
 def get_random_string(length=10):

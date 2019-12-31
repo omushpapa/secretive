@@ -8,7 +8,7 @@ except (ImportError, OSError, RuntimeError):
     long_description = 'Usage available at http://github.com/giantas/pyconfigreader'
 
 setup(
-    name='passwordgen',
+    name='secretive',
     version='0.1.0',
     description='A password generator',
     long_description=long_description,
@@ -20,8 +20,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'passwordfrom=passwordgen.command_line:password_from',
-            'passwordgen=passwordgen.command_line:password_gen',
+            'secretfrom=secretive.command_line:password_from',
+            'secretgen=secretive.command_line:password_gen',
         ]
     },
     install_requires=[
