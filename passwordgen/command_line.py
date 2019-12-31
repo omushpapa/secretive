@@ -2,8 +2,8 @@ from .gen import cli
 
 
 def password_from():
-    cli(True)
+    cli()
 
 
 def password_gen():
-    cli()
+    cli(word=False)

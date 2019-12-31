@@ -9,9 +9,15 @@ class Cypher:
 
     def get_available_cyphers(self):
         """Select random cyphers"""
-        available = [i for i in inspect.getmembers(self, predicate=inspect.isroutine) if i[0].startswith('to_')]
-        end = len(available)
-        return sample(available, randint(1, end))
+        return [i for i in inspect.getmembers(self, predicate=inspect.isroutine) if i[0].startswith('to_')]
+
+    def sample_cyphers(self, count=None):
+        available_cyphers = self.get_available_cyphers()
+        if count is None:
+            end = len(available_cyphers)
+            count = randint(1, end)
+
+        return sample(available_cyphers, count)
 
     def to_int(self, char):
         """Convert character to integer
@@ -21,7 +27,7 @@ class Cypher:
         :rtype: str
         """
         store = {
-            'a': [4,],
+            'a': [4],
             'b': [13, 3],
             'c': [6],
             'd': [9],

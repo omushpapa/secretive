@@ -34,5 +34,5 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.6",
     ],
-    keywords='password generator secret'
+    keywords='password generator secret random'
 )

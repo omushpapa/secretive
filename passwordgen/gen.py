@@ -1,24 +1,18 @@
 #! /usr/bin/env python3
 """Generate a simple but complex password limited by characters and specifications provided"""
 
-import click
-from cypher import Cypher
 from random import choice
-from string import (ascii_letters as letters, digits,
-                    ascii_uppercase, ascii_lowercase)
+from string import ascii_letters
 
-punctuation = '!#$%&\'()*+,-./:;<=>?@[\\]^_{|}'
+import click
 
-RULES = {
-    'number': lambda: choice(digits),
-    'lowercase': lambda: choice(ascii_lowercase),
-    'uppercase': lambda: choice(ascii_uppercase),
-    'special': lambda: choice(punctuation),
-}
-RULE_IDS = list(RULES.keys()) + ['all']
+from .cypher import Cypher
+from .rules import RULES, RuleType, punctuation
+
+RULE_IDS = list(map(lambda i: i.value, RULES.keys())) + ['all']
 
 cypher = Cypher()
-select_cyphers = cypher.get_available_cyphers()
+select_cyphers = cypher.sample_cyphers()
 
 
 def get_cypher(char):
@@ -41,7 +35,7 @@ def fill_length(number):
     """
     chars = []
     for _ in range(number):
-        char = get_cypher(choice(letters))
+        char = get_cypher(choice(ascii_letters))
         chars.append(str(char))
 
     return ''.join(chars)
@@ -50,36 +44,32 @@ def fill_length(number):
 def passes_rule(rule, password):
     """Check if password passes the rule
 
-    :param str rule: The rule to verify
+    :param RuleType rule: The rule to verify
     :param str password: The password
     :return: True if rule passes, else False
     :rtype: bool
     """
-    if rule == 'number':
-        for c in password:
-            if c.isdigit():
-                return True
-    elif rule == 'lowercase':
-        for c in password:
-            if c.islower():
-                return True
-    elif rule == 'uppercase':
-        for c in password:
-            if c.isupper():
-                return True
-    elif rule == 'special':
-        for c in password:
-            if c in punctuation:
-                return True
+    if rule == RuleType.NUMBER:
+        return any((c for c in password if c.isdigit()))
 
-    return False
+    elif rule == RuleType.LOWERCASE:
+        return any((c for c in password if c.islower()))
+
+    elif rule == RuleType.UPPERCASE:
+        return any((c for c in password if c.isupper()))
+
+    elif rule == RuleType.SPECIAL:
+        return any((c for c in password if c in punctuation))
+
+    raise NotImplementedError(f'Rule {rule} has not been implemented')
 
 
 def update_password(password, value, position=None):
     """Update password with value
 
     :param str password: The password string
-    :param str value: The value to update with
+    :param str value: The character(s) to update with
+    :param int position: The position in which to insert the character(s)
     :return: The updated password
     """
     result = list(password)
@@ -90,10 +80,10 @@ def update_password(password, value, position=None):
     return ''.join(result)
 
 
-def fix_rule(rule, password):
+def apply_rule(rule, password):
     """Apply a rule
 
-    :param str rule: The password rule
+    :param RuleType rule: The password rule
     :param str password: The password
     :return: A character that meets the rule
     :rtype: str
@@ -122,33 +112,37 @@ def generate_password(**kwargs):
         rules = RULE_IDS[:-1]
 
     for rule in rules:
-        if not passes_rule(rule, password):
-            password = fix_rule(rule, password)
+        rule_ = RuleType(rule)
+        if not passes_rule(rule_, password):
+            password = apply_rule(rule_, password)
 
+    return password
+
+
+def _password_gen(**kwargs):
+    password = generate_password(**kwargs)
     information = 'Your password: '
     click.echo(information + click.style(password, fg='cyan'))
+
+
+def from_word(word_arg):
+    if word_arg:
+        return click.argument('word')
+
+    return lambda x: x
 
 
 def cli(word=True):
     rule = click.option('--rule', default=['all'], multiple=True, type=click.Choice(RULE_IDS))
     length = click.option('--length', default=8)
 
-    if word:
-        @click.command()
-        @length
-        @rule
-        @click.argument('word')
-        def password_gen(**kwargs):
-            """Generate a random password string based off of specific characters"""
-            return generate_password(**kwargs)
-
-    else:
-        @click.command()
-        @length
-        @rule
-        def password_gen(**kwargs):
-            """Generate a random password string"""
-            return generate_password(**kwargs)
+    @click.command()
+    @length
+    @rule
+    @from_word(word)
+    def password_gen(**kwargs):
+        """Generate a random password string"""
+        return _password_gen(**kwargs)
 
     return password_gen()
 
