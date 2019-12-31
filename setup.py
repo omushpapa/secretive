@@ -9,7 +9,7 @@ except (ImportError, OSError, RuntimeError):
 
 setup(
     name='passwordgen',
-    version='0.0.1',
+    version='0.1.0',
     description='A password generator',
     long_description=long_description,
     url='http://github.com/giantas/passwordgen',
